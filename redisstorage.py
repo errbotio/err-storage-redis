@@ -22,24 +22,35 @@ class RedisStorage(StorageBase):
         self.ns = namespace
 
     def get(self, key: str) -> Any:
-        result = self.redis.get('{0}.{1}'.format(self.ns, key))
+        unique_key = '{0}.{1}'.format(self.ns, key)
+        log.debug('Get key: %s' % unique_key)
+        result = self.redis.get(unique_key)
         if result is None:
-            raise KeyError("%s.%s doesn't exists." % (self.ns, key))
-        return decode(result)
+            raise KeyError("%s doesn't exists." % (unique_key))
+        return decode(result.decode())
 
     def remove(self, key: str):
-        self.redis.delete('%s.%s'.format(self.ns, key))
+        unique_key = '{0}.{1}'.format(self.ns, key)
+        log.debug("Removing value at '%s'" %
+                  (unique_key))
+        result = self.redis.delete(unique_key)
+        if not result:
+            raise KeyError('%s does not exist' % (unique_key))
 
     def set(self, key: str, value: Any) -> None:
-        log.debug("Setting value '%s.%s' at %s" %
-                  (self.ns, key, encode(value)))
-        self.redis.set('{0}.{1}'.format(self.ns, key), encode(value))
+        unique_key = '{0}.{1}'.format(self.ns, key)
+        log.debug("Setting value '%s' at '%s'" %
+                  (encode(value), unique_key))
+        self.redis.set(unique_key, encode(value))
 
     def len(self):
         return len(self.keys())
 
     def keys(self):
-        return self.keys(pattern='{0}.*'.format(self.ns))
+        filter = '{0}.*'.format(self.ns)
+        keys = self.redis.keys(pattern=filter)
+        log.debug('Keys: %s' % keys)
+        return keys
 
     def close(self) -> None:
         pass
