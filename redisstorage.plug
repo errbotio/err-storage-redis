@@ -1,0 +1,6 @@
+[Core]
+Name = Redis
+Module = redisstorage
+
+[Documentation]
+Description = This is the storage plugin for Redis.
