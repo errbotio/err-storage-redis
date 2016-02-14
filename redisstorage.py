@@ -30,7 +30,11 @@ class RedisStorage(StorageBase):
         return decode(result.decode())
 
     def remove(self, key: str):
-        unique_key = '{0}.{1}'.format(self.ns, key)
+        try:
+            unique_key = key.decode()
+        except (TypeError, AttributeError):
+            unique_key = '{0}.{1}'.format(self.ns, key)
+
         log.debug("Removing value at '%s'" %
                   (unique_key))
         result = self.redis.delete(unique_key)
