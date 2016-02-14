@@ -5,6 +5,7 @@ from jsonpickle import encode, decode
 from typing import Any
 
 from errbot.storage.base import StorageBase, StoragePluginBase
+from errbot.utils import compat_str
 import redis
 
 log = logging.getLogger('errbot.storage.redis')
@@ -14,15 +15,20 @@ PORT = 'port'
 DB = 'db'
 PASSWORD = 'password'
 
+GLOBAL_PREFIX = 'errbot'
 
 class RedisStorage(StorageBase):
+
+    def _make_nskey(self, key):
+        return ':'.join((GLOBAL_PREFIX, self.ns, compat_str(key)))
 
     def __init__(self, redis, namespace):
         self.redis = redis
         self.ns = namespace
+        self._all_keys = self._make_nskey('*')
 
     def get(self, key: str) -> Any:
-        unique_key = '{0}.{1}'.format(self.ns, key)
+        unique_key = self._make_nskey(key)
         log.debug('Get key: %s' % unique_key)
         result = self.redis.get(unique_key)
         if result is None:
@@ -30,29 +36,22 @@ class RedisStorage(StorageBase):
         return decode(result.decode())
 
     def remove(self, key: str):
-        try:
-            unique_key = key.decode()
-        except (TypeError, AttributeError):
-            unique_key = '{0}.{1}'.format(self.ns, key)
-
-        log.debug("Removing value at '%s'" %
-                  (unique_key))
+        unique_key = self._make_nskey(key)
+        log.debug("Removing value at '%s'", unique_key)
         result = self.redis.delete(unique_key)
         if not result:
             raise KeyError('%s does not exist' % (unique_key))
 
     def set(self, key: str, value: Any) -> None:
-        unique_key = '{0}.{1}'.format(self.ns, key)
-        log.debug("Setting value '%s' at '%s'" %
-                  (encode(value), unique_key))
+        unique_key = self._make_nskey(key)
+        log.debug("Setting value '%s' at '%s'", encode(value), unique_key)
         self.redis.set(unique_key, encode(value))
 
     def len(self):
         return len(self.keys())
 
     def keys(self):
-        filter = '{0}.*'.format(self.ns)
-        keys = self.redis.keys(pattern=filter)
+        keys = self.redis.keys(pattern=self._all_keys)
         log.debug('Keys: %s' % keys)
         return keys
 
