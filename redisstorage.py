@@ -17,6 +17,7 @@ PASSWORD = 'password'
 
 GLOBAL_PREFIX = 'errbot'
 
+
 class RedisStorage(StorageBase):
 
     def _make_nskey(self, key):
@@ -51,9 +52,17 @@ class RedisStorage(StorageBase):
         return len(self.keys())
 
     def keys(self):
+
         keys = self.redis.keys(pattern=self._all_keys)
-        log.debug('Keys: %s' % keys)
-        return keys
+        base_namespace = ':'.join((GLOBAL_PREFIX, self.ns))
+        filtered_keys = []
+
+        for key in keys:
+            key = compat_str(key)
+            filtered_keys.append(key.lstrip(base_namespace))
+
+        log.debug('Keys: %s' % filtered_keys)
+        return filtered_keys
 
     def close(self) -> None:
         pass
