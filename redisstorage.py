@@ -10,11 +10,6 @@ import redis
 
 log = logging.getLogger('errbot.storage.redis')
 
-SERVER = 'server'
-PORT = 'port'
-DB = 'db'
-PASSWORD = 'password'
-
 GLOBAL_PREFIX = 'errbot'
 
 
@@ -72,19 +67,10 @@ class RedisPlugin(StoragePluginBase):
 
     def __init__(self, bot_config):
         super().__init__(bot_config)
-        if not all(k in self._storage_config for k in (SERVER, PORT, DB, PASSWORD)):
-            raise Exception('You need to specify: {0}, {1}, {2}, {3} in "STORAGE_CONFIG"'.format(
-                SERVER, PORT, DB, PASSWORD)
-            )
 
     def open(self, namespace: str) -> StorageBase:
         config = self._storage_config
 
-        connection = redis.StrictRedis(
-            host=config[SERVER],
-            port=config[PORT],
-            db=config[DB],
-            password=config[PASSWORD]
-        )
+        connection = redis.StrictRedis(**config)
 
         return RedisStorage(connection, namespace)
