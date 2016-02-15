@@ -27,6 +27,7 @@ class RedisStorage(StorageBase):
         self.redis = redis
         self.ns = namespace
         self._all_keys = self._make_nskey('*')
+        self.ns_prefix = self._make_nskey('')
 
     def get(self, key: str) -> Any:
         unique_key = self._make_nskey(key)
@@ -54,12 +55,11 @@ class RedisStorage(StorageBase):
     def keys(self):
 
         keys = self.redis.keys(pattern=self._all_keys)
-        base_namespace = ':'.join((GLOBAL_PREFIX, self.ns))
         filtered_keys = []
 
         for key in keys:
             key = compat_str(key)
-            filtered_keys.append(key.lstrip(base_namespace))
+            filtered_keys.append(key.lstrip(self.ns_prefix))
 
         log.debug('Keys: %s' % filtered_keys)
         return filtered_keys
