@@ -13,11 +13,13 @@
  BOT_EXTRA_STORAGE_PLUGINS_DIR='/path/to/err-storage'
  STORAGE = 'Redis'
  STORAGE_CONFIG = {
-     'server': 'localhost',
+     'host': 'localhost',
      'port': 6379,
      'db': 0,
      'password': 'xyz123',
  }
  ```
+
+`STORAGE_CONFIG` will send any option specified as an argument to `redis.StrictRedis`.
 
 3. Start your bot in text mode: `errbot -T` to give it a shot.
