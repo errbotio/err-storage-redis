@@ -53,8 +53,9 @@ class RedisStorage(StorageBase):
         filtered_keys = []
 
         for key in keys:
+            log.debug('Key: (pre-filter): {0}'.format(key))
             key = compat_str(key)
-            filtered_keys.append(key.lstrip(self.ns_prefix))
+            filtered_keys.append(key.split(self.ns_prefix)[1])
 
         log.debug('Keys: %s' % filtered_keys)
         return filtered_keys
