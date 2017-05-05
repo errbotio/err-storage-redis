@@ -5,12 +5,24 @@ from jsonpickle import encode, decode
 from typing import Any
 
 from errbot.storage.base import StorageBase, StoragePluginBase
-from errbot.utils import compat_str
 import redis
 
 log = logging.getLogger('errbot.storage.redis')
 
 GLOBAL_PREFIX = 'errbot'
+
+
+def compat_str(s):
+    """
+    Detect if s is a string and convert it to unicode if it is bytes.
+    :param s: the string to ensure compatibility from.
+    """
+    if isinstance(s, str):
+        return s
+    elif isinstance(s, bytes):
+        return s.decode('utf-8')
+    else:
+        return str(s)
 
 
 class RedisStorage(StorageBase):
