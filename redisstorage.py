@@ -1,15 +1,15 @@
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
 import logging
-from jsonpickle import encode, decode
 from typing import Any
 
-from errbot.storage.base import StorageBase, StoragePluginBase
 import redis
+from errbot.storage.base import StorageBase, StoragePluginBase
+from jsonpickle import decode, encode
 
-log = logging.getLogger('errbot.storage.redis')
+log = logging.getLogger("errbot.storage.redis")
 
-GLOBAL_PREFIX = 'errbot'
+GLOBAL_PREFIX = "errbot"
 
 
 def compat_str(s):
@@ -20,25 +20,24 @@ def compat_str(s):
     if isinstance(s, str):
         return s
     elif isinstance(s, bytes):
-        return s.decode('utf-8')
+        return s.decode("utf-8")
     else:
         return str(s)
 
 
 class RedisStorage(StorageBase):
-
     def _make_nskey(self, key):
-        return ':'.join((GLOBAL_PREFIX, self.ns, compat_str(key)))
+        return ":".join((GLOBAL_PREFIX, self.ns, compat_str(key)))
 
     def __init__(self, redis, namespace):
         self.redis = redis
         self.ns = namespace
-        self._all_keys = self._make_nskey('*')
-        self.ns_prefix = self._make_nskey('')
+        self._all_keys = self._make_nskey("*")
+        self.ns_prefix = self._make_nskey("")
 
     def get(self, key: str) -> Any:
         unique_key = self._make_nskey(key)
-        log.debug('Get key: %s' % unique_key)
+        log.debug("Get key: %s" % unique_key)
         result = self.redis.get(unique_key)
         if result is None:
             raise KeyError("%s doesn't exists." % (unique_key))
@@ -49,7 +48,7 @@ class RedisStorage(StorageBase):
         log.debug("Removing value at '%s'", unique_key)
         result = self.redis.delete(unique_key)
         if not result:
-            raise KeyError('%s does not exist' % (unique_key))
+            raise KeyError("%s does not exist" % (unique_key))
 
     def set(self, key: str, value: Any) -> None:
         unique_key = self._make_nskey(key)
@@ -65,11 +64,11 @@ class RedisStorage(StorageBase):
         filtered_keys = []
 
         for key in keys:
-            log.debug('Key: (pre-filter): {0}'.format(key))
+            log.debug("Key: (pre-filter): {0}".format(key))
             key = compat_str(key)
             filtered_keys.append(key.split(self.ns_prefix)[1])
 
-        log.debug('Keys: %s' % filtered_keys)
+        log.debug("Keys: %s" % filtered_keys)
         return filtered_keys
 
     def close(self) -> None:
@@ -77,7 +76,6 @@ class RedisStorage(StorageBase):
 
 
 class RedisPlugin(StoragePluginBase):
-
     def __init__(self, bot_config):
         super().__init__(bot_config)
 
