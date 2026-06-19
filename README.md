@@ -23,3 +23,25 @@
 `STORAGE_CONFIG` will send any option specified as an argument to `redis.StrictRedis`.
 
 3. Start your bot in text mode: `errbot -T` to give it a shot.
+
+### Running Tests
+
+To run the automated test suite:
+
+1. Create and activate a Python virtual environment:
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   ```
+2. Install the dependencies and testing requirements:
+   ```bash
+   pip install -r requirements.txt errbot pytest tox fakeredis
+   ```
+3. Run the tests using `pytest` directly:
+   ```bash
+   pytest
+   ```
+   Or run both tests and style checks using `tox`:
+   ```bash
+   tox
+   ```

@@ -41,7 +41,7 @@ class RedisStorage(StorageBase):
         result = self.redis.get(unique_key)
         if result is None:
             raise KeyError("%s doesn't exists." % (unique_key))
-        return decode(result.decode())
+        return decode(result.decode(), keys=True)
 
     def remove(self, key: str):
         unique_key = self._make_nskey(key)
@@ -52,8 +52,8 @@ class RedisStorage(StorageBase):
 
     def set(self, key: str, value: Any) -> None:
         unique_key = self._make_nskey(key)
-        log.debug("Setting value '%s' at '%s'", encode(value), unique_key)
-        self.redis.set(unique_key, encode(value))
+        log.debug("Setting value '%s' at '%s'", encode(value, keys=True), unique_key)
+        self.redis.set(unique_key, encode(value, keys=True))
 
     def len(self):
         return len(self.keys())
